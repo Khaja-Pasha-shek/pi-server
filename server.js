@@ -4,11 +4,14 @@ const { v4: uuidv4 } = require("uuid");
 const mongoose = require("mongoose");
 const Session = require("./models/session");
 const cors = require('cors');
+require('dotenv').config();
 
 
 const app = express();
 const PORT = 3000;
-const mongoURI = "mongodb+srv://khajapasha:khaja@cluster0.iuqny57.mongodb.net/pi_validation?retryWrites=true&w=majority";
+const mongoURI = process.env.MONGO_URL;
+
+// const mongoURI = "mongodb+srv://khajapasha:khaja@cluster0.iuqny57.mongodb.net/pi_validation?retryWrites=true&w=majority";
 
 mongoose.connect(mongoURI)
   .then(() => console.log("MongoDB connected"))
