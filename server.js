@@ -9,9 +9,9 @@ require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
-const mongoURI = process.env.MONGO_URL;
+// const mongoURI = process.env.MONGO_URL;
 
-// const mongoURI = "mongodb+srv://khajapasha:khaja@cluster0.iuqny57.mongodb.net/pi_validation?retryWrites=true&w=majority";
+const mongoURI = "mongodb+srv://khajapasha:khaja@cluster0.iuqny57.mongodb.net/pi_validation?retryWrites=true&w=majority";
 
 mongoose.connect(mongoURI)
   .then(() => console.log("MongoDB connected"))
@@ -23,7 +23,8 @@ app.use(cors()); // Enable CORS for all origins by default
 app.use(express.json());
 
 app.get("/", (req, res) => {
-  res.json({ status: "online", message: "Pi Validator is running." });
+  // res.json({ status: "online", message: "Pi Validator is running." });
+  res.send("ok");
 });
 
 app.post("/session", async (req, res) => {
@@ -47,24 +48,33 @@ app.post("/session", async (req, res) => {
 
   await newSession.save();
 
-  res.json({ status: "ok", uuid: newSession.uuid, retryCount });
+  // res.json({ status: "ok", uuid: newSession.uuid, retryCount });
+  res.send(newSession.uuid)
 });
 
 app.put("/validate", async (req, res) => {
   const { uuid, offset, digits } = req.body;
 
   if (!uuid || typeof offset !== "number" || typeof digits !== "string" || digits.length !== 100) {
-    return res.status(400).json({ status: "error", reason: "Invalid input format" });
+    return res.status(400).send("Invalid input format");
   }
 
   const session = await Session.findOne({ uuid });
 
   if (!session) {
-    return res.status(404).json({ status: "error", reason: "Session not found" });
+    return res.status(404).send("session_not_found");
   }
 
   if (!session.isActive) {
-    return res.status(403).json({ status: "error", reason: "Session is closed" });
+    return res.status(403).send("Session is closed");
+  }
+
+  // Check if offset already exists in valid or invalid chunks
+  const alreadySubmitted = session.validChunks.some(chunk => chunk.offset === offset) ||
+    session.invalidChunks.some(chunk => chunk.offset === offset);
+
+  if (alreadySubmitted) {
+    return res.send("existed");
   }
 
   const expected = piDigits.slice(offset, offset + 100);
@@ -74,15 +84,16 @@ app.put("/validate", async (req, res) => {
     session.validChunks.push(chunk);
     session.validCount++;
     await session.save();
-    return res.json({ status: "ok" });
+    return res.send("valid");
   } else {
     session.invalidChunks.push(chunk);
     session.invalidCount++;
     session.isActive = false;
     await session.save();
-    return res.json({ status: "error", reason: "Digits mismatch. Session closed." });
+    return res.send("invalid");
   }
 });
+
 
 
 app.get("/sessions", async (req, res) => {
