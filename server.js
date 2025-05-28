@@ -9,9 +9,12 @@ require('dotenv').config();
 
 const app = express();
 const PORT = 3000;
+
 const mongoURI = process.env.MONGO_URL;
 
 // const  mongoURI = "mongodb+srv://khajapasha:khaja@picluster.eo4roz9.mongodb.net/";
+console.log(mongoURI)
+
 
 mongoose.connect(mongoURI)
   .then(() => console.log("MongoDB connected"))
