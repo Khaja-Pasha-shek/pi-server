@@ -11,7 +11,7 @@ const app = express();
 const PORT = 3000;
 // const mongoURI = process.env.MONGO_URL;
 
-const mongoURI = "mongodb+srv://khajapasha:khaja@cluster0.iuqny57.mongodb.net/pi_validation?retryWrites=true&w=majority";
+const  mongoURI = "mongodb+srv://khajapasha:khaja@picluster.eo4roz9.mongodb.net/";
 
 mongoose.connect(mongoURI)
   .then(() => console.log("MongoDB connected"))
